@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { Search, Plus, Filter } from "lucide-react";
+import  { useState } from "react";
+import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import { TaskColumn } from "@/components/TaskColumn";
 import { AddTaskModal } from "@/components/AddTaskModal";
 
@@ -111,63 +110,47 @@ const TaskManagement = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
-      {/* Enhanced Header */}
-      <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/30 dark:border-slate-700/30 shadow-sm">
-        <div className="p-6">
-          <div className="flex flex-col space-y-6 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-            {/* Title Section */}
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
-                <Filter className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
-                  Task Management
-                </h1>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
-                  Organize and track your productivity
-                </p>
-              </div>
-            </div>
-            
-            {/* Search and Filters */}
-            <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Search tasks..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-full sm:w-64 bg-white/90 dark:bg-slate-800/90 border-slate-200/50 dark:border-slate-700/50 focus:border-blue-500 dark:focus:border-blue-400 transition-colors shadow-sm"
-                />
-              </div>
-              
-              <div className="flex space-x-2">
-                {filterButtons.map((filter) => (
-                  <Button
-                    key={filter}
-                    variant={activeFilter === filter ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setActiveFilter(filter)}
-                    className={`text-xs font-medium transition-all duration-200 ${
-                      activeFilter === filter 
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg border-0 hover:shadow-xl" 
-                        : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-700 border-slate-200/50 dark:border-slate-700/50 shadow-sm hover:shadow-md"
-                    }`}
-                  >
-                    {filter}
-                  </Button>
-                ))}
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
+      {/* Header */}
+      <div className="p-6 space-y-8">
+        {/* Welcome Section */}
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Task Management 📋
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400">
+            Organize and track your productivity
+          </p>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search tasks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-full sm:w-64 border-slate-200 dark:border-slate-800"
+            />
+          </div>
+          
+          <div className="flex space-x-2">
+            {filterButtons.map((filter) => (
+              <Button
+                key={filter}
+                variant={activeFilter === filter ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveFilter(filter)}
+              >
+                {filter}
+              </Button>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* Enhanced Kanban Board */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+        {/* Kanban Board */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           <TaskColumn
             title="📝 To Do"
             status="todo"
@@ -204,11 +187,11 @@ const TaskManagement = () => {
         </div>
       </div>
 
-      {/* Enhanced Floating Add Button */}
+      {/* Floating Add Button */}
       <Button
         onClick={() => setIsAddModalOpen(true)}
         size="lg"
-        className="fixed bottom-8 right-8 h-16 w-16 rounded-full shadow-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 z-50 transition-all duration-300 hover:scale-110 border-0"
+        className="fixed bottom-8 right-8 h-16 w-16 rounded-full shadow-2xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 z-50 transition-all duration-300 hover:scale-110"
       >
         <Plus className="h-7 w-7 text-white" />
       </Button>
