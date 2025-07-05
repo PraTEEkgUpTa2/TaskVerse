@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import TaskManagement from "./pages/TaskManagement";
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
                   <div className="flex-1">
                     <Routes>
                       <Route path="/" element={<Dashboard />} />
-                      <Route path="/tasks" element={<Dashboard />} />
+                      <Route path="/tasks" element={<TaskManagement />} />
                       <Route path="/habits" element={<Dashboard />} />
                       <Route path="/focus" element={<Dashboard />} />
                       <Route path="/gamification" element={<Dashboard />} />
