@@ -54,7 +54,8 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            {getGreeting()}, {user?.firstName}! 👋
+            {getGreeting()}, 
+            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"> {user?.firstName}! </span> 👋
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
             You have 3 tasks due today. Let's make it productive!

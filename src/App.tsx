@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import TaskManagement from "./pages/TaskManagement";
+import Subscription from "./pages/Subscription";
+import HabitTracker from "./pages/HabitTracker";
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/subscription" element={<Subscription />} />
           <Route path="/dashboard/*" element={
               <SidebarProvider>
                 <div className="min-h-screen flex w-full">
@@ -24,7 +27,7 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/tasks" element={<TaskManagement />} />
-                      <Route path="/habits" element={<Dashboard />} />
+                      <Route path="/habits" element={<HabitTracker />} />
                       <Route path="/focus" element={<Dashboard />} />
                       <Route path="/gamification" element={<Dashboard />} />
                       <Route path="/analytics" element={<Dashboard />} />
