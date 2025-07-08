@@ -3,7 +3,7 @@ import { Hero } from "@/components/Hero";
 import { Features } from "@/components/Features";
 import { HowItWorks } from "@/components/HowItWorks";
 import { Referral } from "@/components/Referral";
-import { Gamification } from "@/components/Gamification";
+import { Gamification } from "@/components/Gamifications";
 import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
 
