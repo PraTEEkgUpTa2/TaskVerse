@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import TaskManagement from "./pages/TaskManagement";
 import Subscription from "./pages/Subscription";
 import HabitTracker from "./pages/HabitTracker";
+import FocusMode from "./pages/FocusMode";
 
 function App() {
   return (
@@ -28,7 +29,7 @@ function App() {
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/tasks" element={<TaskManagement />} />
                       <Route path="/habits" element={<HabitTracker />} />
-                      <Route path="/focus" element={<Dashboard />} />
+                      <Route path="/focus" element={<FocusMode />} />
                       <Route path="/gamification" element={<Dashboard />} />
                       <Route path="/analytics" element={<Dashboard />} />
                       <Route path="/settings" element={<Dashboard />} />
