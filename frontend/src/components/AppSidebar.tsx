@@ -20,8 +20,8 @@ const sidebarItems = [
   { title: "Habits", url: "/dashboard/habits", icon: Repeat },
   { title: "Focus Mode", url: "/dashboard/focus", icon: Timer },
   { title: "Gamification", url: "/dashboard/gamification", icon: Trophy },
-  { title: "Analytics", url: "/dashboard/analytics", icon: BarChart },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
+  { title: "Referral", url: "/dashboard/referral", icon: BarChart },
 ];
 
 export function AppSidebar() {

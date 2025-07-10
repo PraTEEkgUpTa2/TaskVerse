@@ -11,6 +11,8 @@ import Subscription from "./pages/Subscription";
 import HabitTracker from "./pages/HabitTracker";
 import FocusMode from "./pages/FocusMode";
 import Gamification from "./pages/Gamification";
+import Settings from "./pages/Settings";
+import Referral from "./pages/Referal";
 
 function App() {
   return (
@@ -32,8 +34,8 @@ function App() {
                       <Route path="/habits" element={<HabitTracker />} />
                       <Route path="/focus" element={<FocusMode />} />
                       <Route path="/gamification" element={<Gamification />} />
-                      <Route path="/analytics" element={<Dashboard />} />
-                      <Route path="/settings" element={<Dashboard />} />
+                      <Route path="/referral" element={<Referral />} />
+                      <Route path="/settings" element={<Settings />} />
                     </Routes>
                   </div>
                 </div>
