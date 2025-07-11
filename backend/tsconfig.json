@@ -2,13 +2,20 @@
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "esModuleInterop": true,
     "outDir": "dist",
     "baseUrl": "./",
     "strict": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
   },
-  "include": ["src"]
+   "include": [
+      "src/**/*",
+      "src/types.d.ts",
+  ],
+  "exclude": [
+      "node_modules"
+  ],
+  "files":["./src/types.d.ts"]
 }
