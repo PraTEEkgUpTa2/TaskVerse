@@ -13,6 +13,8 @@ import FocusMode from "./pages/FocusMode";
 import Gamification from "./pages/Gamification";
 import Settings from "./pages/Settings";
 import Referral from "./pages/Referal";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/dashboard/*" element={
+            <AuthProvider>
+              <ProtectedRoute>
               <SidebarProvider>
                 <div className="min-h-screen flex w-full">
                   <AppSidebar />
@@ -40,6 +44,8 @@ function App() {
                   </div>
                 </div>
               </SidebarProvider>
+              </ProtectedRoute>
+              </AuthProvider>
             } />
         </Routes>
       </Router>

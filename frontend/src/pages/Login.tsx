@@ -3,18 +3,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import axios from "@/api/axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
-    // Handle login logic here
-    localStorage.setItem("user", JSON.stringify({ email }));
-    // Redirect to dashboard or home page after login               
-    window.location.href = "/dashboard"; // Redirect to dashboard page after login
+
+    try {
+      const response = await axios.post("/api/v1/users/login", {
+       email,
+       password
+});
+      if (response.status === 200) {
+        alert("Login successful!");
+        navigate("/dashboard");
+
+      } else {
+        alert("Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("An error occurred during login. Please try again.");
+    }
+
+     // Redirect to dashboard page after login
   };
 
   return (

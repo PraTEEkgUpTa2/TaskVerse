@@ -20,11 +20,11 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 interface User {
-  firstName: string;
-  lastName?: string;
+  name: string;
   email?: string;
 }
 
@@ -32,17 +32,12 @@ export function DashboardHeader() {
     const { setTheme } = useTheme();
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [user, setUser] = useState<User | null>(null);
+    
+    const auth = useAuth();
+    if (!auth) return null; // or loading spinner
+    const { user, loading } = auth;
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if(storedUser){
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser  || { firstName: "Guest" });
-        }else{
-            setUser({ firstName: "Guest" });
-        }
-    },[]);
+    
 
   // Mock search results - in real app, this would come from your data
     const searchResults = [
@@ -121,14 +116,14 @@ export function DashboardHeader() {
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center space-x-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg p-2 transition-colors">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="" />
+                    <AvatarImage src={user?.avatar} />
                     <AvatarFallback className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-                      {user?.firstName?.charAt(0).toUpperCase() || "A"}
+                      
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden md:block">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">{user?.firstName}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Level 12</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{(user?.name ?? "Guest").charAt(0).toUpperCase() + (user?.name ?? "Guest").slice(1)}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{user?.level}</p>
                   </div>
                   <ChevronDown className="h-4 w-4 text-slate-500" />
                 </div>
@@ -136,7 +131,7 @@ export function DashboardHeader() {
               <DropdownMenuContent className="w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" align="end">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{user?.firstName + " " + user?.lastName}</p>
+                    <p className="text-sm font-medium">{(user?.name ?? "Guest").charAt(0).toUpperCase() + (user?.name ?? "Guest").slice(1)}</p>
                     <p className="text-xs text-muted-foreground">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>

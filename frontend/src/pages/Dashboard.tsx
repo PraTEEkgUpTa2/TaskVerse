@@ -6,13 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
+import axios from "@/api/axios";
 
-type User = {
-  firstName: string;
-  lastName?: string;
-  email?: string;
-  
-};
+ interface User {
+  _id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  coverImage?: string;
+  // add more fields if needed
+}
+
+
 
 const Dashboard = () => {
   const tasks = [
@@ -27,16 +32,20 @@ const Dashboard = () => {
     { id: 2, name: "Read 30 minutes", streak: 12, completed: false },
     { id: 3, name: "Meditation", streak: 5, completed: true },
   ];
-
   const [user, setUser] = useState<User | null>(null);
+
+  const getUserDetail = async () => {
+    const user = await axios.get("/api/v1/users/profile");
+    console.log(user);
+    if (user.status === 200) {
+      setUser(user.data.data);
+    } else {
+      console.error("Failed to fetch user details");
+    }
+  }
+  
     useEffect(() => {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser || { name: "Guest" });
-      } else {
-          setUser({ firstName: "Guest" });
-      }
+      getUserDetail();
     }, []);
 
     const getGreeting = () => {
@@ -48,14 +57,14 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
-      <DashboardHeader />
+      <DashboardHeader/>
       
       <main className="p-6 space-y-8">
         {/* Welcome Section */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
             {getGreeting()}, 
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"> {user?.firstName}! </span> 👋
+            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"> {(user?.name ?? "Guest").charAt(0).toUpperCase() + (user?.name ?? "Guest").slice(1)}! </span> 👋
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
             You have 3 tasks due today. Let's make it productive!

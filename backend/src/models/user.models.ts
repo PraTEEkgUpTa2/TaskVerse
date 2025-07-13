@@ -53,7 +53,6 @@ const UserSchema: Schema = new Schema({
     },
     referralCode: {
         type: String,
-        required: true,
         unique: true,
         index: true
     },
@@ -82,6 +81,9 @@ const UserSchema: Schema = new Schema({
 UserSchema.pre<IUser>('save', async function(next) {
     if (!this.isModified('password')) return next();
     this.password = await bcrypt.hash(this.password, 10);
+    if (!this.referralCode) {
+    this.referralCode = this.name + Math.random().toString(36).substring(2, 8);
+  }
     next();
 });
 

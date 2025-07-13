@@ -13,6 +13,7 @@ import {
   useSidebar,
 } from "./ui/sidebar";
 import { useNavigate } from "react-router-dom";
+import axios from "@/api/axios";
 
 const sidebarItems = [
   { title: "Home", url: "/dashboard", icon: Home },
@@ -32,6 +33,12 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
 
   const isActive = (path: string) => currentPath === path;
+
+  const handleLogout = async () => {
+    await axios.post("/api/v1/users/logout");
+    navigate("/");
+  }
+
 
   return (
     <Sidebar className="border-r border-slate-200 dark:border-slate-800">
@@ -79,7 +86,7 @@ export function AppSidebar() {
 
         {/* Logout Button */}
         <div className="mt-auto p-4">
-          <button className="flex items-center space-x-3 px-4 py-3 w-full text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all duration-200" onClick={() => {navigate("/");}}>
+          <button className="flex items-center space-x-3 px-4 py-3 w-full text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all duration-200" onClick={() => { handleLogout() }}>
             <LogOut className="w-5 h-5" />
             {!collapsed && <span className="font-medium">Logout</span>}
           </button>
