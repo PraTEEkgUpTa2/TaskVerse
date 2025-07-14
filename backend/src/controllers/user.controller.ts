@@ -79,6 +79,7 @@ const registerUser = asyncHandler(
         referredUser.coins += 100;
         referredUser.xp += 50;
         await referredUser.save();
+       
       }
     }
 
@@ -90,6 +91,23 @@ const registerUser = asyncHandler(
       coverImage: coverImage?.url || "",
       referredBy: referredByUserId,
     });
+
+    if (referralCode && referredByUserId) {
+  const existingReferral = await Referral.findOne({
+    referred: user._id, // this new user
+    referrer: referredByUserId
+  });
+
+  if (!existingReferral) {
+    await Referral.create({
+      referrer: referredByUserId,
+      referred: user?._id,
+      status: "joined",
+      joinedAt: new Date(),
+    });
+  }
+}
+
 
     const createdUser = await User.findById(user._id).select(
       "-password -refreshToken"
@@ -371,6 +389,53 @@ const updateUserCoverImage = asyncHandler(
   }
 );
 
+import Referral from "../models/referral.models.js";
+
+
+const trackReferralClick = asyncHandler(async (req : Request, res : Response) => {
+  const { referralCode } = req.body;
+
+  const referrer = await User.findOne({ referralCode });
+  if (!referrer) {
+    throw new ApiError(404, "Invalid referral code");
+  }
+
+   const existingReferral = await Referral.findOne({
+    referrer: referrer._id,
+    status: "pending"
+  });
+
+  // Create a new pending referral
+  if(!existingReferral){
+  await Referral.create({
+    referrer: referrer._id,
+    status: "pending",
+  });
+}
+
+  res.status(200).json(new ApiResponse(200, {}, "Referral tracked"));
+});
+
+ const getReferralStats = asyncHandler(async (req : Request, res : Response) => {
+  const userId = req.user?._id;
+
+  const referrals = await Referral.find({ referrer: userId }).populate("referred","name email avatar");
+
+  const pending = referrals.filter(r => r.status === "pending");
+  const joined = referrals.filter(r => r.status === "joined");
+
+  console.log("Referral Stats for", userId, referrals);
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      total: referrals.length,
+      pending,
+      joined,
+    }, "Referral stats fetched")
+  );
+});
+
+
 export {
   registerUser,
   loginUser,
@@ -381,4 +446,6 @@ export {
   updateUserProfile,
   updateUserAvatar,
   updateUserCoverImage,
+  trackReferralClick,
+  getReferralStats
 };

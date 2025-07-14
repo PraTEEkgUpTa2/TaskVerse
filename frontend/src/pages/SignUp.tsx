@@ -42,6 +42,8 @@ const Signup = () => {
   const ref = params.get("ref");
   if (ref) {
     setReferralCode(ref);
+
+    axios.post("/api/v1/users/track", { referralCode: ref });
   }
 }, []);
 
