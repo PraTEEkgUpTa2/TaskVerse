@@ -1,9 +1,10 @@
-import  { useState } from "react";
+import  { useState, useEffect } from "react";
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskColumn } from "@/components/TaskColumn";
 import { AddTaskModal } from "@/components/AddTaskModal";
+import axios from "@/api/axios"
 
 export interface Task {
   id: string;
@@ -16,33 +17,25 @@ export interface Task {
 }
 
 const TaskManagement = () => {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      title: "Design homepage wireframes",
-      status: "todo",
-      priority: "high",
-      tags: ["Design", "UI/UX"],
-      dueDate: "2024-01-15",
-      createdAt: "2024-01-10"
-    },
-    {
-      id: "2", 
-      title: "Implement user authentication",
-      status: "inprogress",
-      priority: "medium",
-      tags: ["Backend", "Security"],
-      createdAt: "2024-01-08"
-    },
-    {
-      id: "3",
-      title: "Write project documentation",
-      status: "completed",
-      priority: "low",
-      tags: ["Documentation"],
-      createdAt: "2024-01-05"
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+  const fetchTasks = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/tasks/task");
+      console.log("Fetched tasks response:", data); // 👈 log response
+      const mappedTasks = data.data.map((task: any) => ({
+          ...task,
+          id: task._id,
+        }));
+        setTasks(mappedTasks);
+    } catch (err) {
+      console.error("Error fetching tasks", err);
     }
-  ]);
+  };
+
+  fetchTasks();
+}, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -51,7 +44,8 @@ const TaskManagement = () => {
 
   const filterButtons = ["All", "Today", "Upcoming", "Completed"];
 
-  const filteredTasks = tasks.filter(task => {
+  const filteredTasks = (tasks ?? []).filter(task => {
+    if (!task || !task.title) return false;
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          task.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     
@@ -74,22 +68,25 @@ const TaskManagement = () => {
     return filteredTasks.filter(task => task.status === status);
   };
 
-  const handleAddTask = (newTask: Omit<Task, "id" | "createdAt">) => {
-    const task: Task = {
-      ...newTask,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-    setTasks(prev => [...prev, task]);
+  const handleAddTask = async (newTask: Omit<Task, "id" | "createdAt">) => {
+     try {
+    const { data } = await axios.post("/api/v1/tasks/task", newTask);
+    setTasks(prev => [...prev, data.data]); // append task from backend
+  } catch (err) {
+    console.error("Failed to add task", err);
+  }
   };
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = async(taskId: string) => {
+    await axios.delete(`/api/v1/tasks/${taskId}`)
     setTasks(prev => prev.filter(task => task.id !== taskId));
   };
 
-  const handleEditTask = (updatedTask: Task) => {
+  const handleEditTask = async (updatedTask: Task) => {
+    const {data} = await axios.put(`/api/v1/tasks/${updatedTask.id}`, updatedTask)
+    const edited = {...data.data, id: data.data._id};
     setTasks(prev => prev.map(task => 
-      task.id === updatedTask.id ? updatedTask : task
+      task.id === edited.id ? edited : task
     ));
   };
 
