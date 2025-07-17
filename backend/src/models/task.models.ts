@@ -6,7 +6,7 @@ interface ITask extends Document {
     status: "todo" | "inprogress" | "completed",
     tags: string [],
     dueDate?: Date,
-    user: mongoose.Types.ObjectId
+    user: mongoose.Schema.Types.ObjectId
 }
 
 const TaskSchema = new Schema({
@@ -32,7 +32,7 @@ const TaskSchema = new Schema({
         type: Date
     },
     user: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     }
 },

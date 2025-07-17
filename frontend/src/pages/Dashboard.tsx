@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import axios from "@/api/axios";
 
- interface User {
+ export interface User {
   _id: string;
   name: string;
   email: string;

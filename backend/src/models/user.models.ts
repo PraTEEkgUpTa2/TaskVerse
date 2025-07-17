@@ -10,7 +10,7 @@ export interface IUser extends Document {
     avatar?: string;
     coverImage?: string;
     theme: 'light' | 'dark';
-    referredBy?: mongoose.Types.ObjectId;
+    referredBy?: mongoose.Schema.Types.ObjectId;
     referralCode: string;
     xp: number;
     coins: number;
@@ -48,7 +48,7 @@ const UserSchema: Schema = new Schema({
         default: 'light'
     },
     referredBy: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
     referralCode: {

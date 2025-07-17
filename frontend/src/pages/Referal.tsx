@@ -20,6 +20,7 @@ import {
   Target,
   Zap,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import axios from "@/api/axios"
 
@@ -54,6 +55,7 @@ const Referral = () => {
   pending: [],
   joined: [],
 });
+
   
   
 
@@ -107,7 +109,7 @@ const Referral = () => {
     name: r.referred?.name || "Unknown",
     status: "joined",
     joinedDate: new Date(r.joinedAt || r.createdAt).toLocaleDateString(),
-    avatar: r.referred?.name?.split(" ").map(n => n[0]).join("") || "👤"
+    avatar: r?.referred?.avatar
   })),
   ...referralStats.pending.map((r) => ({
     id: r._id,
@@ -266,9 +268,12 @@ const Referral = () => {
                       className="flex items-center justify-between p-3 rounded-lg border bg-card"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-primary">
-                          {friend.avatar}
-                        </div>
+                        <Avatar className="h-8 w-8">
+                    <AvatarImage src={friend?.avatar} />
+                    <AvatarFallback className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                      
+                    </AvatarFallback>
+                  </Avatar>
                         <div>
                           <p className="font-medium text-foreground">
                             {friend.name}
