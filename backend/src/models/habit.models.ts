@@ -7,7 +7,7 @@ interface IHabit extends Document{
     xp: number,
     streak: number,
     longestStreak: number,
-    completedDates: string[],
+    completedDates: Date[],
     createdAt: Date,
 }
 
@@ -40,7 +40,7 @@ const HabitSchema = new Schema({
         default: 0
     },
     completedDates: {
-        type: [String],
+        type: [Date],
         default: []
     },
     createdAt: {

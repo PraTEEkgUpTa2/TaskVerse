@@ -22,12 +22,14 @@ app.use(cookieParser());
 //Routes
 
 import userRoutes from "./routes/user.routes.js";
-import taskRoutes from "./routes/task.routes.js"
+import taskRoutes from "./routes/task.routes.js";
+import habitRoutes from "./routes/habit.routes.js"
 
 //Routes declaration
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tasks", taskRoutes);
+app.use("/api/v1/habit", habitRoutes);
 
 
 export { app }
