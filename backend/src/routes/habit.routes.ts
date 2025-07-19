@@ -7,6 +7,6 @@ const router = Router();
 router.route("/habit").post(verifyJWT,createHabit);
 router.route("/habit").get(verifyJWT, getHabit);
 router.route("/:habitId").delete(verifyJWT,deleteHabit);
-router.route("/:habitId").put(verifyJWT,updateHabit);
+router.route("/:habitId").patch(verifyJWT,updateHabit);
 
 export default router;

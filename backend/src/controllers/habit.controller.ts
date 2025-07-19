@@ -6,7 +6,6 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import Habit from "../models/habit.models.js";
 
 const tagMap: Record<string,number> = {
-    // "Health", "Learning", "Mindfulness", "Work", "Personal", "Other"
     Health: 30,
     Learning: 30,
     Mindfulness: 25,
@@ -37,7 +36,7 @@ const createHabit = asyncHandler(async(req: Request, res: Response) => {
         throw new ApiError(400, "Habit Failed to create");
     }
 
-    res.status(200).json(new ApiResponse(200,habit,"Habit created Successfully"))
+    return res.status(200).json(new ApiResponse(200,habit,"Habit created Successfully"))
 
 
 });

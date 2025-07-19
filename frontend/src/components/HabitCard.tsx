@@ -1,10 +1,9 @@
 import React from "react";
 import { Flame, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Habit } from "@/pages/HabitTracker";
-
+import { Habit } from "@/pages/HabitTracker";import { HabitWithCompletion } from "@/pages/HabitTracker";
 interface HabitCardProps {
-  habit: Habit;
+  habit: HabitWithCompletion;
   onToggle: (habitId: string) => void;
 }
 
@@ -26,7 +25,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onToggle }) => {
           ? "bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/10 dark:to-emerald-900/10 border-green-200 dark:border-green-800 shadow-sm" 
           : "bg-card border-border hover:border-border/80"
       }`}
-      onClick={() => onToggle(habit.id)}
+      onClick={() => onToggle(habit._id)}
     >
       <div className="flex items-center space-x-4">
         {/* Status Indicator */}
@@ -34,7 +33,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onToggle }) => {
           <input
             type="checkbox"
             checked={habit.completed}
-            onChange={() => onToggle(habit.id)}
+            onChange={() => onToggle(habit._id)}
             className="w-5 h-5 text-green-600 bg-background border-border rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2"
           />
           {habit.completed && (
@@ -49,10 +48,10 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onToggle }) => {
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-1">
             <h3 className={`font-semibold ${habit.completed ? "text-green-800 dark:text-green-400" : "text-foreground"}`}>
-              {habit.name}
+              {habit.title}
             </h3>
-            <Badge className={getCategoryColor(habit.category)} variant="secondary">
-              {habit.category}
+            <Badge className={getCategoryColor(habit.tag)} variant="secondary">
+              {habit.tag}
             </Badge>
           </div>
           
@@ -66,7 +65,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onToggle }) => {
             <div className="flex items-center space-x-1">
               <Zap className="w-4 h-4 text-yellow-500" />
               <span className="text-muted-foreground">
-                +{habit.xpReward} XP
+                +{habit.xp} XP
               </span>
             </div>
           </div>

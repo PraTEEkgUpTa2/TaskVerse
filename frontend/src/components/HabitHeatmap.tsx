@@ -33,8 +33,8 @@ export const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ habits }) => {
   const getActivityLevel = (date: string) => {
     let completedCount = 0;
     
-    habits.forEach(habit => {
-      if (selectedHabit === "all" || habit.id === selectedHabit) {
+    (habits ?? []).forEach(habit => {
+      if (selectedHabit === "all" || habit._id === selectedHabit) {
         if (habit.completedDates!.includes(date)) {
           completedCount++;
         }
@@ -70,8 +70,8 @@ export const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ habits }) => {
   };
 
   const getCompletedHabitsForDate = (date: string) => {
-    return habits.filter(habit => 
-      (selectedHabit === "all" || habit.id === selectedHabit) && 
+    return (habits ?? []).filter(habit => 
+      (selectedHabit === "all" || habit._id === selectedHabit) && 
       habit.completedDates!.includes(date)
     );
   };
@@ -90,17 +90,17 @@ export const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ habits }) => {
         >
           All Habits
         </button>
-        {habits.map(habit => (
+        {(habits ?? []).map(habit => (
           <button
-            key={habit.id}
-            onClick={() => setSelectedHabit(habit.id)}
+            key={habit._id}
+            onClick={() => setSelectedHabit(habit._id)}
             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-              selectedHabit === habit.id
+              selectedHabit === habit._id
                 ? "bg-purple-500 text-white"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
           >
-            {habit.name}
+            {habit.title}
           </button>
         ))}
       </div>
@@ -133,9 +133,9 @@ export const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ habits }) => {
                           {completedHabits.length > 0 && (
                             <div className="text-xs mt-2 space-y-1">
                               {completedHabits.map(habit => (
-                                <div key={habit.id} className="flex items-center space-x-1">
+                                <div key={habit._id} className="flex items-center space-x-1">
                                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                                  <span>{habit.name}</span>
+                                  <span>{habit.title}</span>
                                 </div>
                               ))}
                             </div>

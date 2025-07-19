@@ -1,5 +1,5 @@
-
-import  { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "@/api/axios"
 import { Flame, Plus, Target, Calendar, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,101 +7,82 @@ import { HabitCard } from "@/components/HabitCard";
 import { HabitHeatmap } from "@/components/HabitHeatmap";
 import { StatsCard } from "@/components/StatsCard";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { AddHabitModal} from "@/components/AddHabitModal";
+import { AddHabitModal } from "@/components/AddHabitModal";
 
 export interface Habit {
-  id: string;
-  name: string;
+  _id: string;
+  title: string;
+  tag: string;
+  xp: number;
   streak: number;
-  completed: boolean;
-  category: string;
+  longestStreak: number;
   completedDates: string[];
-  xpReward: number;
+  createdAt: string;
+}
+
+export interface HabitWithCompletion extends Habit {
+  completed: boolean;
 }
 
 const HabitTracker = () => {
-  const [habits, setHabits] = useState<Habit[]>([
-    {
-      id: "1",
-      name: "Morning Exercise",
-      streak: 12,
-      completed: true,
-      category: "Health",
-      completedDates: ["2025-07-06", "2025-07-05", "2025-07-04", "2025-07-03", "2025-07-02"],
-      xpReward: 25
-    },
-    {
-      id: "2",
-      name: "Read 30 minutes",
-      streak: 8,
-      completed: false,
-      category: "Learning",
-      completedDates: ["2024-01-01", "2024-01-03", "2024-01-05"],
-      xpReward: 20
-    },
-    {
-      id: "3",
-      name: "Meditation",
-      streak: 5,
-      completed: true,
-      category: "Mindfulness",
-      completedDates: ["2024-01-02", "2024-01-04", "2024-01-05"],
-      xpReward: 15
-    },
-    {
-      id: "4",
-      name: "Drink 8 glasses of water",
-      streak: 15,
-      completed: true,
-      category: "Health",
-      completedDates: ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"],
-      xpReward: 10
-    },
-    {
-      id: "5",
-      name: "Write in journal",
-      streak: 3,
-      completed: false,
-      category: "Personal",
-      completedDates: ["2024-01-03", "2024-01-04"],
-      xpReward: 20
-    }
-  ]);
-
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const handleToggleHabit = (habitId: string) => {
-    setHabits(prev => prev.map(habit => 
-      habit.id === habitId ? { ...habit, completed: !habit.completed } : habit
-    ));
-  };
-
-  const handleAddHabit = (newHabit: Omit<Habit, "id" | "streak" | "completedDates" | "completed" | "xpReward">) => {
-    const habit = {
-        ...newHabit,
-        id: Date.now().toString(),
-        streak: 0,
-        completed: false,
-        completedDates: [],
-        xpReward: 10 
+  const fetchHabits = async () => {
+    try {
+      const res = await axios.get("/api/v1/habits/habit");
+      setHabits(res.data.data);
+    } catch (err) {
+      console.error("Error fetching habits", err);
     }
-    setHabits(prev => [...prev, habit]);
-    console.log("Add new habit functionality - opens a modal to create new habits");
   };
 
-  const totalXP = habits.filter(h => h.completed).reduce((sum, h) => sum + (h.xpReward ?? 0), 0);
-  const completedToday = habits.filter(h => h.completed).length;
-  const longestStreak = Math.max(...habits.map(h => h.streak).filter((s): s is number => s !== undefined));
+  useEffect(() => {
+    fetchHabits();
+  }, []);
+
+  const handleToggleHabit = async (habitId: string) => {
+    try {
+      await axios.patch(
+        `/api/v1/habits/${habitId}`,
+        { markCompleted: true }
+      );
+      fetchHabits();
+    } catch (err) {
+      console.error("Error updating habit", err);
+    }
+  };
+
+  const isCompletedToday = (completedDates: string[]) =>
+  completedDates?.some(date => new Date(date).toDateString() === new Date().toDateString());
+
+  const handleAddHabit = async (newHabit: { title: string; tag: string }) => {
+    try {
+      const {data} = await axios.post("/api/v1/habits/habit",newHabit);
+      setHabits(prev => [...prev, data.data])
+    } catch (err) {
+      console.error("Error adding habit", err);
+    }
+  };
+
+  const totalXP = (habits ?? []).reduce((sum, h) => {
+  const completedToday = h.completedDates?.some(date =>
+    new Date(date).toDateString() === new Date().toDateString()
+  );
+  return completedToday ? sum + (h.xp ?? 0) : sum;
+}, 0);
+  const completedToday = (habits ?? []).filter(habit =>
+    (habit.completedDates ?? []).some(date => new Date(date).toDateString() === new Date().toDateString())
+  ).length;
+  const longestStreak = Math.max(...(habits ?? []).map(h => h.longestStreak || 0), 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
-      {/* Simple header with just sidebar toggle */}
       <div className="flex items-center p-4">
         <SidebarTrigger />
       </div>
-      
+
       <main className="p-6 space-y-8">
-        {/* Welcome Section */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
             <span>Habit Tracker</span>
@@ -112,7 +93,6 @@ const HabitTracker = () => {
           </p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
             title="Today's XP"
@@ -123,7 +103,7 @@ const HabitTracker = () => {
           />
           <StatsCard
             title="Completed Today"
-            value={`${completedToday}/${habits.length}`}
+            value={`${completedToday}/${habits?.length}`}
             subtext="Keep it up!"
             icon={Target}
             color="bg-gradient-to-r from-green-500 to-emerald-600"
@@ -137,7 +117,7 @@ const HabitTracker = () => {
           />
           <StatsCard
             title="Total Habits"
-            value={habits.length.toString()}
+            value={habits?.length.toString()}
             subtext="Active tracking"
             icon={Trophy}
             color="bg-gradient-to-r from-blue-500 to-blue-600"
@@ -145,29 +125,25 @@ const HabitTracker = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Habits List */}
           <Card className="lg:col-span-2 border-slate-200 dark:border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
                 <Target className="w-5 h-5 text-blue-600" />
                 <span>Today's Habits</span>
               </CardTitle>
-              <Button variant="outline" size="sm">
-                View All
-              </Button>
+              <Button variant="outline" size="sm">View All</Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {habits.map((habit) => (
+              {(habits ?? []).map((habit) => (
                 <HabitCard
-                  key={habit.id}
-                  habit={habit}
+                  key={habit._id}
+                  habit={{ ...habit, completed: isCompletedToday(habit.completedDates) }}
                   onToggle={handleToggleHabit}
                 />
               ))}
             </CardContent>
           </Card>
 
-          {/* Achievement Panel */}
           <Card className="border-slate-200 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -187,7 +163,7 @@ const HabitTracker = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
@@ -210,7 +186,6 @@ const HabitTracker = () => {
           </Card>
         </div>
 
-        {/* Habit Heatmap */}
         <Card className="border-slate-200 dark:border-slate-800">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -224,7 +199,6 @@ const HabitTracker = () => {
         </Card>
       </main>
 
-      {/* Floating Add Button */}
       <Button
         onClick={() => setIsAddModalOpen(true)}
         size="lg"
@@ -234,10 +208,10 @@ const HabitTracker = () => {
       </Button>
 
       <AddHabitModal
-        isOpen = {isAddModalOpen}
-        onClose= {() => setIsAddModalOpen(false)}
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
         onAddHabit={handleAddHabit}
-        />
+      />
     </div>
   );
 };

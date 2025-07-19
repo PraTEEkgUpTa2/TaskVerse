@@ -29,7 +29,7 @@ import habitRoutes from "./routes/habit.routes.js"
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tasks", taskRoutes);
-app.use("/api/v1/habit", habitRoutes);
+app.use("/api/v1/habits", habitRoutes);
 
 
 export { app }
