@@ -137,7 +137,7 @@ const HabitTracker = () => {
               {(habits ?? []).map((habit) => (
                 <HabitCard
                   key={habit._id}
-                  habit={{ ...habit, completed: isCompletedToday(habit.completedDates) }}
+                  habit={{ ...habit, completed: isCompletedToday(habit.completedDates)}}
                   onToggle={handleToggleHabit}
                 />
               ))}

@@ -1,13 +1,30 @@
 import React from "react";
 import { Flame, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Habit } from "@/pages/HabitTracker";import { HabitWithCompletion } from "@/pages/HabitTracker";
+
+import { HabitWithCompletion } from "@/pages/HabitTracker";
 interface HabitCardProps {
   habit: HabitWithCompletion;
   onToggle: (habitId: string) => void;
+  
 }
 
 export const HabitCard: React.FC<HabitCardProps> = ({ habit, onToggle }) => {
+
+  const getXPByTag = (tag: string): number => {
+  const tagMap: Record<string,number> = {
+    Health: 30,
+    Learning: 30,
+    Mindfulness: 25,
+    Work: 25,
+    Personal: 20,
+    Other: 15
+}
+
+  return tagMap[tag]
+};
+ 
+
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case "health": return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
@@ -65,7 +82,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onToggle }) => {
             <div className="flex items-center space-x-1">
               <Zap className="w-4 h-4 text-yellow-500" />
               <span className="text-muted-foreground">
-                +{habit.xp} XP
+                +{getXPByTag(habit.tag)} XP
               </span>
             </div>
           </div>

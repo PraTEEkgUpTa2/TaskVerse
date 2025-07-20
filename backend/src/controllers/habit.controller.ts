@@ -21,14 +21,12 @@ function areDateConsecutive(date1: Date, date2: Date){
 
 const createHabit = asyncHandler(async(req: Request, res: Response) => {
     const {title,tag} = req.body;
-
-    const xp = tagMap[tag] || 15;
+   
 
     const habit = await Habit.create({
         user: req.user?._id,
         title,
         tag,
-        xp,
         completedDates: [],
     });
 
@@ -105,6 +103,12 @@ const updateHabit = asyncHandler(async(req: Request, res: Response) => {
         habit.xp += tagMap[habit.tag] || 15;
 
         await habit.save();
+
+          const user = await User.findById(req.user?._id);
+          if (user && typeof user.xp === "number") {
+            user.xp += tagMap[habit.tag] || 15;
+            await user.save();
+}
 
         return res.status(200).json(new ApiResponse(200,habit,"Habit updated Successfully"));
 
