@@ -85,7 +85,7 @@ const Gamification = () => {
       progress: 2,
       target: 2,
       reward: { type: 'xp', amount: 30 },
-      completed: true
+      completed: false
     }
   ];
 

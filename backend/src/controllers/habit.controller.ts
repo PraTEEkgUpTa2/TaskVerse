@@ -14,9 +14,12 @@ const tagMap: Record<string,number> = {
     Other: 15
 }
 
-function areDateConsecutive(date1: Date, date2: Date){
-    const differ = Math.floor((date2.getTime() - date1.getTime())/(1000*60*60*24))
-    return differ === 1;
+function areDateConsecutive(date1: Date, date2: Date) {
+  const d1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate());
+  const d2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate());
+
+  const diff = (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
+  return diff === 1;
 }
 
 const createHabit = asyncHandler(async(req: Request, res: Response) => {
@@ -83,13 +86,15 @@ const updateHabit = asyncHandler(async(req: Request, res: Response) => {
 
         habit?.completedDates.push(today);
 
-        const sortedDates = habit?.completedDates.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+        const sortedDates = [...habit.completedDates] // avoid mutating the original
+  .map(date => new Date(date))
+  .sort((a, b) => a.getTime() - b.getTime());
         
         let currentStreak = 1;
         let longestStreak = 1;
 
         for(let i = 1; i < sortedDates?.length!; i++){
-            if(areDateConsecutive(new Date(sortedDates![i-1]), new Date(sortedDates![i]))){
+            if(areDateConsecutive(new Date(sortedDates[i-1]), new Date(sortedDates[i]))){
                 currentStreak++;
                 longestStreak = Math.max(longestStreak, currentStreak);
             }else{

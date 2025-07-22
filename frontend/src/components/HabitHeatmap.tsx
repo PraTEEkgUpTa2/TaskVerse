@@ -35,7 +35,7 @@ export const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ habits }) => {
     
     (habits ?? []).forEach(habit => {
       if (selectedHabit === "all" || habit._id === selectedHabit) {
-        if (habit.completedDates!.includes(date)) {
+        if (habit.completedDates?.some(d => new Date(d).toISOString().split("T")[0] === date)) {
           completedCount++;
         }
       }
@@ -69,12 +69,16 @@ export const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ habits }) => {
     });
   };
 
-  const getCompletedHabitsForDate = (date: string) => {
-    return (habits ?? []).filter(habit => 
-      (selectedHabit === "all" || habit._id === selectedHabit) && 
-      habit.completedDates!.includes(date)
-    );
-  };
+const getCompletedHabitsForDate = (date: string) => {
+  return (habits ?? []).filter(
+    habit =>
+      (selectedHabit === "all" || habit._id === selectedHabit) &&
+      habit.completedDates?.some(
+        d => new Date(d).toISOString().split("T")[0] === date
+      )
+  );
+};
+
 
   return (
     <div className="space-y-6">
