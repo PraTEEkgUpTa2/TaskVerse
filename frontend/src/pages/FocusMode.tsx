@@ -1,52 +1,46 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Play, Pause, RotateCcw, Music, Clock, CheckCircle, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
+import { Play, Pause, RotateCcw, Music, Settings, Star, Maximize2 } from "lucide-react";
+import FlipDigit from './../components/FlipDigit';
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-interface FocusSession {
-  id: string;
+type TimerMode = 'pomodoro' | 'shortBreak' | 'longBreak';
+
+interface ModeConfig {
   duration: number; // in minutes
-  completed: boolean;
-  date: string;
-  startTime: string;
+  label: string;
+  color: string;
+  bgColor: string;
 }
 
+const modeConfigs: Record<TimerMode, ModeConfig> = {
+  pomodoro: { 
+    duration: 25, 
+    label: 'Focus Time', 
+    color: 'text-red-400',
+    bgColor: 'from-red-500/20 to-orange-500/20'
+  },
+  shortBreak: { 
+    duration: 5, 
+    label: 'Short Break', 
+    color: 'text-green-400',
+    bgColor: 'from-green-500/20 to-teal-500/20'
+  },
+  longBreak: { 
+    duration: 15, 
+    label: 'Long Break', 
+    color: 'text-blue-400',
+    bgColor: 'from-blue-500/20 to-purple-500/20'
+  }
+};
+
 const FocusMode = () => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
+  const [currentMode, setCurrentMode] = useState<TimerMode>('pomodoro');
+  const [timeLeft, setTimeLeft] = useState(modeConfigs.pomodoro.duration * 60);
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [musicEnabled, setMusicEnabled] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [sessions, setSessions] = useState<FocusSession[]>([
-    {
-      id: "1",
-      duration: 25,
-      completed: true,
-      date: "2025-01-07",
-      startTime: "09:30"
-    },
-    {
-      id: "2", 
-      duration: 25,
-      completed: true,
-      date: "2025-01-07",
-      startTime: "10:30"
-    },
-    {
-      id: "3",
-      duration: 15,
-      completed: false,
-      date: "2025-01-07",
-      startTime: "14:15"
-    }
-  ]);
-
-  const totalTime = 25 * 60; // 25 minutes
-  const progress = ((totalTime - timeLeft) / totalTime) * 100;
-  
 
   useEffect(() => {
     audioRef.current = new Audio("/lofi.mp3");
@@ -54,13 +48,11 @@ const FocusMode = () => {
     audioRef.current.volume = 0.3; 
     
     return () => {
-    // Cleanup on unmount or toggle
-    audioRef.current?.pause();
-    audioRef.current!.currentTime = 0; // Reset to beginning
-  };
+      audioRef.current?.pause();
+      audioRef.current!.currentTime = 0;
+    };
   }, [musicEnabled]);
 
-  // Play or pause on toggle
   useEffect(() => {
     if (!audioRef.current) return;
 
@@ -72,6 +64,35 @@ const FocusMode = () => {
   }, [musicEnabled]);
     
   useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error('Error toggling fullscreen:', error);
+    }
+  }, []);
+
+  // Update timer when mode changes
+  useEffect(() => {
+    if (!isActive) {
+      setTimeLeft(modeConfigs[currentMode].duration * 60);
+    }
+  }, [currentMode, isActive]);
+
+  // Timer logic
+  useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isActive && !isPaused && timeLeft > 0) {
       interval = setInterval(() => {
@@ -79,20 +100,17 @@ const FocusMode = () => {
       }, 1000);
     } else if (timeLeft === 0) {
       setIsActive(false);
-      // Auto-complete session when timer reaches 0
-      const newSession: FocusSession = {
-        id: Date.now().toString(),
-        duration: 25,
-        completed: true,
-        date: new Date().toISOString().split('T')[0],
-        startTime: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
-      };
-      setSessions(prev => [newSession, ...prev]);
+      // Auto switch to next mode
+      if (currentMode === 'pomodoro') {
+        setCurrentMode('shortBreak');
+      } else {
+        setCurrentMode('pomodoro');
+      }
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, isPaused, timeLeft]);
+  }, [isActive, isPaused, timeLeft, currentMode]);
 
   const handleStart = useCallback(() => {
     setIsActive(true);
@@ -104,214 +122,189 @@ const FocusMode = () => {
   }, [isPaused]);
 
   const handleReset = useCallback(() => {
-     if (isActive && timeLeft > 0 && timeLeft < 25*60) {
-    const newSession: FocusSession = {
-      id: Date.now().toString(),
-      duration: Math.round((totalTime - timeLeft) / 60), // how many minutes were completed
-      completed: false, // because it was reset
-      date: new Date().toISOString().split('T')[0],
-      startTime: new Date().toLocaleTimeString('en-US', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    };
-    setSessions(prev => [newSession, ...prev]);
-  }
-    setTimeLeft(25 * 60);
+    const newTime = modeConfigs[currentMode].duration * 60;
+    setTimeLeft(newTime);
     setIsActive(false);
     setIsPaused(false);
-  }, [isActive, timeLeft]);
+  }, [currentMode]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  const handleModeChange = (mode: TimerMode) => {
+    if (!isActive) {
+      setCurrentMode(mode);
+    }
   };
 
-  const getMotivationalText = () => {
-    if (timeLeft === 0) return "Great job! 🎉";
-    if (isActive && !isPaused) return "Time to focus! 🧠";
-    if ( timeLeft < totalTime && timeLeft > 0) return "Break coming soon! ⏰";
-    return "Ready to be productive? 💪";
-  };
-
-  const completedToday = sessions.filter(s => s.completed && s.date === new Date().toISOString().split('T')[0]).length;
-  const totalMinutesToday = sessions
-    .filter(s => s.completed && s.date === new Date().toISOString().split('T')[0])
-    .reduce((acc, s) => acc + s.duration, 0);
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const progress = ((modeConfigs[currentMode].duration * 60 - timeLeft) / (modeConfigs[currentMode].duration * 60)) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
-      {/* Header with sidebar toggle and music control */}
-      <div className="flex items-center justify-between p-4">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${modeConfigs[currentMode].bgColor} transition-all duration-1000`}>
+       <div className="flex items-center justify-between p-4">
         <SidebarTrigger />
-        
-        <div className="flex items-center space-x-2">
-          <Music className={`w-4 h-4 ${musicEnabled ? 'text-purple-600' : 'text-slate-400'}`} />
-          <span className="text-sm text-slate-600 dark:text-slate-400">
-            {musicEnabled ? "currentTrack" : 'Background music'}
-          </span>
-          <Switch 
-            checked={musicEnabled}
-            onCheckedChange={setMusicEnabled}
-          />
+      {/* Music Control - Top Right */}
+      <div className="absolute top-6 right-6 z-10">
+        <div className="flex items-center space-x-3 glass-morphism rounded-full px-4 py-2 shadow-lg">
+          <Music className={`w-4 h-4 transition-colors ${musicEnabled ? 'text-indigo-400' : 'text-slate-400'}`} />
+          <span className="text-sm text-white/80 font-medium">LoFi Music</span>
+          <button
+            onClick={() => setMusicEnabled(!musicEnabled)}
+            className={`w-10 h-6 rounded-full transition-colors duration-300 ${
+              musicEnabled ? 'bg-indigo-500' : 'bg-slate-600'
+            }`}
+          >
+            <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${
+              musicEnabled ? 'transform translate-x-5' : 'transform translate-x-1'
+            }`} />
+          </button>
+        </div>
         </div>
       </div>
 
-      <main className="p-6 space-y-8">
-        {/* Welcome Section */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center justify-center space-x-2">
-            <span>Focus Mode</span>
-            <span className="text-2xl">⏱️</span>
+      <main className="flex flex-col items-center justify-center min-h-screen px-6 space-y-12 pb-20">
+
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white">
+            Focus Timer
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            {getMotivationalText()}
-          </p>
+          <div className={`text-xl font-medium ${modeConfigs[currentMode].color}`}>
+            {modeConfigs[currentMode].label}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-12 max-w-7xl mx-auto">
-          {/* Timer Section */}
-          <div className="xl:col-span-3 space-y-12">
-            {/* Main Timer Display */}
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardContent className="pt-12 pb-8">
-                <div className="text-center space-y-6">
-                  {/* Timer Display */}
-                  <div className={`text-8xl font-bold transition-all duration-300 ${
-                    isActive && !isPaused 
-                      ? 'text-purple-600 animate-pulse' 
-                      : 'text-slate-700 dark:text-slate-300'
-                  }`}>
-                    {formatTime(timeLeft)}
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="space-y-2">
-                    <Progress 
-                      value={progress} 
-                      className="w-full h-3"
-                    />
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {Math.round(progress)}% complete
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Mode Selection */}
+        <div className="flex space-x-4">
+          {Object.entries(modeConfigs).map(([mode, config]) => (
+            <button
+              key={mode}
+              onClick={() => handleModeChange(mode as TimerMode)}
+              disabled={isActive && !isPaused}
+              className={`
+                px-6 py-3 rounded-full font-medium text-sm transition-all duration-300
+                ${currentMode === mode 
+                  ? `${config.color} bg-white/10 border border-current shadow-lg scale-105` 
+                  : 'text-slate-400 hover:text-white hover:bg-white/5 border border-slate-600'
+                }
+                ${(isActive && !isPaused) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+              `}
+            >
+              {config.label}
+            </button>
+          ))}
+        </div>
 
-            {/* Control Buttons */}
-            <div className="flex justify-center space-x-4">
-              {!isActive || isPaused ? (
-                <Button
-                  onClick={handleStart}
-                  size="lg"
-                  className="h-16 px-8 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Play className="w-6 h-6 mr-2" />
-                  {isPaused ? 'Resume' : 'Start'}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handlePause}
-                  size="lg"
-                  variant="outline"
-                  className="h-16 px-8 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Pause className="w-6 h-6 mr-2" />
-                  Pause
-                </Button>
-              )}
-              
-              <Button
-                onClick={handleReset}
-                size="lg"
-                variant="outline"
-                className="h-16 px-8 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <RotateCcw className="w-6 h-6 mr-2" />
-                Reset
-              </Button>
+        {/* Timer Display */}
+        <div className="text-center space-y-8">
+          {/* Progress Ring */}
+          <div className="relative w-80 h-80 mx-auto">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="rgba(255,255,255,0.1)"
+                strokeWidth="2"
+                fill="none"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke={currentMode === 'pomodoro' ? '#ef4444' : currentMode === 'shortBreak' ? '#22c55e' : '#3b82f6'}
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 45}`}
+                strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress / 100)}`}
+                className="transition-all duration-1000 ease-out"
+              />
+            </svg>
+            
+            {/* Timer Clock - Centered in progress ring */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="timer-glow absolute inset-0 rounded-full"></div>
+              <div className="flex items-center space-x-4 z-10">
+                <FlipDigit value={minutes} label="minutes" />
+                <div className="text-4xl md:text-5xl font-mono font-bold text-white/50 pb-8">:</div>
+                <FlipDigit value={seconds} label="seconds" />
+              </div>
             </div>
           </div>
 
-          {/* Session Stats & Logs */}
-          <div className="space-y-6">
-            {/* Today's Stats */}
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-lg">
-                  <Clock className="w-5 h-5 text-purple-600" />
-                  <span>Today's Focus</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">{completedToday}</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Sessions</div>
-                  </div>
-                  <div className="text-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{totalMinutesToday}</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Minutes</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Status */}
+          <div className="text-lg text-slate-400 font-light">
+            {isActive && !isPaused ? 'Stay focused!' : isPaused ? 'Timer paused' : 'Ready to start'}
+          </div>
+        </div>
 
-            {/* Session Log */}
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-lg">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span>Today's Focus Log</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {sessions.filter(session => session.date === new Date().toISOString().split("T")[0]).slice(0,4).map((session) => (
-                    
-                  <div 
-                    key={session.id}
-                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      {session.completed ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
-                      <div>
-                        <div className="text-sm font-medium text-slate-900 dark:text-white">
-                          {session.duration} mins
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          {session.date},{session.startTime}
-                        </div>
-                      </div>
-                    </div>
-                    <div className={`text-xs px-2 py-1 rounded-full ${
-                      session.completed 
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
-                      {session.completed ? 'Completed' : 'Skipped'}
-                    </div>
-                  </div>
-                ))}
-                
-                {sessions.filter(s => s.date === new Date().toISOString().split("T")[0]).length === 0 && (
-                  <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                    <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No focus sessions yet today</p>
-                    <p className="text-sm">Start your first session!</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        {/* Control Buttons */}
+        <div className="flex items-center space-x-6 mb-16">
+          {/* Start/Pause Button */}
+          {!isActive || isPaused ? (
+            <button
+              onClick={handleStart}
+              className={`
+                ${modeConfigs[currentMode].color.replace('text-', 'bg-').replace('-400', '-500')} 
+                hover:${modeConfigs[currentMode].color.replace('text-', 'bg-').replace('-400', '-600')}
+                text-white px-12 py-4 text-lg font-semibold rounded-full 
+                transition-all duration-300 shadow-lg hover:shadow-xl
+                hover:scale-105 active:scale-95 flex items-center space-x-3
+              `}
+            >
+              <Play className="w-5 h-5" />
+              <span>{isPaused ? 'Resume' : 'Start'}</span>
+            </button>
+          ) : (
+            <button
+              onClick={handlePause}
+              className={`
+                ${modeConfigs[currentMode].color.replace('text-', 'bg-').replace('-400', '-500')} 
+                hover:${modeConfigs[currentMode].color.replace('text-', 'bg-').replace('-400', '-600')}
+                text-white px-12 py-4 text-lg font-semibold rounded-full 
+                transition-all duration-300 shadow-lg hover:shadow-xl
+                hover:scale-105 active:scale-95 flex items-center space-x-3
+              `}
+            >
+              <Pause className="w-5 h-5" />
+              <span>Pause</span>
+            </button>
+          )}
+
+          {/* Secondary Controls */}
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleReset}
+              className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 
+                       rounded-full p-3 transition-all duration-300 
+                       hover:scale-110 active:scale-95"
+            >
+              <RotateCcw className="w-5 h-5" />
+            </button>
+
+            <button className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 
+                             rounded-full p-3 transition-all duration-300 
+                             hover:scale-110 active:scale-95">
+              <Settings className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </main>
+
+      {/* Fullscreen Toggle - Bottom Right */}
+      <div className="fixed bottom-6 right-6 z-20">
+        <button
+          onClick={toggleFullscreen}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white
+                   px-4 py-2 rounded-full font-medium text-sm 
+                   transition-all duration-300 shadow-lg hover:shadow-xl
+                   hover:scale-105 active:scale-95 flex items-center space-x-2"
+        >
+          <Star className="w-4 h-4 text-yellow-300" />
+          <span>{isFullscreen ? 'Exit Focus' : 'Focus Mode'}</span>
+          <Maximize2 className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };
